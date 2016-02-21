@@ -1,11 +1,10 @@
 module Main where
 
-import System.Environment
-import System.IO
+import System.Environment (getArgs)
+import System.IO (isEOF)
+import Control.Monad (unless)
 
-import Text.Regex
-
-import Lib
+import Text.Regex (Regex, mkRegex, matchRegex)
 
 main :: IO ()
 main = do
@@ -15,16 +14,14 @@ main = do
 processLines :: String -> IO ()
 processLines regex = do
   done <- isEOF
-  if done then
-    return ()
-  else do
-    line <- getLine
-    processLine regex line
-    processLines regex
+  unless done $
+    do
+      line <- getLine
+      processLine (mkRegex regex) line
+      processLines regex
 
-processLine :: String -> String -> IO ()
-processLine r line = do
-  let regex = mkRegex r
+processLine :: Regex -> String -> IO ()
+processLine regex line = do
   let resultMaybe = matchRegex regex line
   case resultMaybe of
     Just _ ->  putStrLn line
