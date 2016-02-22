@@ -1,29 +1,27 @@
 module Lib where
 
-import System.IO (isEOF,
-                  openFile,
-                  IOMode(ReadMode),
-                  stdin,
-                  hIsEOF,
-                  hGetLine,
-                  hClose)
+import System.IO ( IOMode(ReadMode),
+                   Handle,
+                   stdin,
+                   hIsEOF,
+                   hGetLine,
+                   openFile)
 import Control.Monad (unless)
 
 import Text.Regex (Regex, mkRegex, matchRegex)
 
-processLines :: String -> Maybe String -> IO ()
-processLines regex maybePath = do
-  handle <- case maybePath of
-    Just filename -> openFile filename ReadMode
-    Nothing -> return stdin
+openMaybeFile :: Maybe String -> IO Handle
+openMaybeFile (Just filename) = openFile filename ReadMode
+openMaybeFile Nothing = return stdin
+
+processLines :: String -> Handle -> IO ()
+processLines regex handle = do
   done <- hIsEOF handle
-  if done then
-    hClose handle
-  else
+  unless done $
     do
       line <- hGetLine handle
       processLine (mkRegex regex) line
-      processLines regex maybePath
+      processLines regex handle
 
 processLine :: Regex -> String -> IO ()
 processLine regex line = do

@@ -1,9 +1,12 @@
 module Main where
 
+import System.IO (hClose)
 import System.Environment (getArgs)
-import Lib (processLines, (!!?))
+import Lib (processLines, (!!?), openMaybeFile)
 
 main :: IO ()
 main = do
   regexList <- getArgs
-  processLines (head regexList) (regexList !!? 1)
+  handle <- openMaybeFile (regexList !!? 1)
+  processLines (head regexList) handle
+  hClose handle
